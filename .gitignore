@@ -1,0 +1,32 @@
+# ESP-IDF build artifacts
+build/
+sdkconfig.old
+*.pyc
+__pycache__/
+
+# IDE files
+.idea/
+.vscode
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python virtual environments
+venv/
+env/
+.env
+
+# Poetry
+poetry.lock
+
+# Pytest cache
+.pytest_cache/
+.coverage
+
+# Temporary files
+*.tmp
+*.log
+
+# ESP-IDF specific
+dependencies.lock
