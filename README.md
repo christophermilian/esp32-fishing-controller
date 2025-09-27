@@ -122,10 +122,12 @@ See the Getting Started Guide for full steps to configure and use ESP-IDF to bui
 After the flashing you should see the output at idf monitor:
 
 ```
-I (290) cpu_start: Starting scheduler on PRO CPU.
-I (0) cpu_start: Starting scheduler on APP CPU.
-I (310) example: USB initialization
-I (310) tusb_desc:
+I (21) boot: ESP-IDF v5.5-dev-3951-ga74725a31b 2nd stage bootloader
+...
+I (254) main_task: Calling app_main()
+I (254) usb_init: USB initialization
+W (254) tusb_desc: No Device descriptor provided, using default.
+I (264) tusb_desc: 
 ┌─────────────────────────────────┐
 │  USB Device Descriptor Summary  │
 ├───────────────────┬─────────────┤
@@ -151,8 +153,7 @@ I (310) tusb_desc:
 ├───────────────────┼─────────────┤
 │bNumConfigurations │ 0x1         │
 └───────────────────┴─────────────┘
-I (480) TinyUSB: TinyUSB Driver installed
-I (480) example: USB initialization DONE
-I (2490) example: Sending Keyboard report
-I (3040) example: Sending Mouse report
+I (434) TinyUSB: TinyUSB Driver installed
+I (434) usb_init: USB initialized
+I (434) usb_init: Starting main loop
 ```
