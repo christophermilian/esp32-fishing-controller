@@ -46,6 +46,8 @@ Button 2 → GPIO2 (active low, internal pull-up)
 - KY-040 module requires 3.3V power supply
 - Use short, quality jumper wires for stable encoder operation
 
+<img width="1098" height="1186" alt="image" src="https://github.com/user-attachments/assets/9c4156cc-c137-480c-a5b3-8567fc039555" />
+
 ## Software Setup
 
 ### ESP-IDF Development
