@@ -62,7 +62,7 @@ Button 2 → GPIO2 (active low, internal pull-up)
 - Joystick uses 13-bit ADC resolution (0-8191 range) with 12dB attenuation for 0-2.5V input range
 - 5% dead-zone is applied to joystick axes to prevent drift
 
-<img width="1098" height="1186" alt="image" src="https://github.com/user-attachments/assets/9c4156cc-c137-480c-a5b3-8567fc039555" />
+![PXL_20251015_020349234](https://github.com/user-attachments/assets/71d8b990-86b1-4c38-b076-bf7b09293d62)
 
 ## Software Setup
 
