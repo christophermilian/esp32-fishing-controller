@@ -315,7 +315,8 @@ void app_main(void) {
 
     // Initialize USB
     usb_init();
-
+    
+    printf("Starting main loop\n");
     ESP_LOGI(USB_INIT_TAG, "Starting main loop");
 
     while (1) {
