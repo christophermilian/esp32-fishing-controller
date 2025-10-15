@@ -5,14 +5,17 @@ A custom USB HID gamepad controller for fishing games, featuring a KY-040 rotary
 ## Features
 
 - **USB HID Gamepad**: Appears as a standard gamepad to host systems
-- **KY-040 Rotary Encoder**: Provides analog stick X-axis control for realistic fishing reel simulation
-- **Push Buttons**: Two additional buttons plus encoder push button (3 total)
+- **Analog Joystick**: 2-axis analog joystick (X/Y axes) with 13-bit ADC resolution for precise control
+- **KY-040 Rotary Encoder**: Provides Z-axis control for realistic fishing reel simulation
+- **Push Buttons**: Two additional buttons plus encoder push button and joystick button (4 total)
 - **High-Speed Rotation Support**: Enhanced quadrature decoding with velocity-based scaling
 - **Debounced Inputs**: Reliable button press detection with proper debouncing
+- **Dead-zone Filtering**: 5% dead-zone on joystick prevents drift when at rest
 
 ## Hardware Components
 
 - ESP32-S2 development board
+- Analog joystick module (2-axis with push button)
 - KY-040 rotary encoder module
 - 2x push buttons (optional)
 - Breadboard and jumper wires
@@ -22,6 +25,16 @@ As a USB stack, TinyUSB component is used for optimal performance and compatibil
 ## Hardware Setup
 
 ### Pin Assignment
+
+**Analog Joystick:**
+```
+Joystick  →  ESP32-S2
+VCC       →  3.3V (IMPORTANT: Use 3.3V, not 5V!)
+GND       →  GND
+VRX       →  GPIO4 (ADC1 Channel 3)
+VRY       →  GPIO5 (ADC1 Channel 4)
+SW        →  GPIO9 (active low, internal pull-up)
+```
 
 **KY-040 Rotary Encoder:**
 ```
@@ -41,10 +54,13 @@ Button 2 → GPIO2 (active low, internal pull-up)
 
 ### Wiring Notes
 
+- **CRITICAL**: Joystick MUST be powered from 3.3V (not 5V) - ESP32-S2 ADC inputs are not 5V tolerant!
 - All buttons use internal pull-up resistors and are active-low
 - Connect button switches between GPIO pin and GND
 - KY-040 module requires 3.3V power supply
 - Use short, quality jumper wires for stable encoder operation
+- Joystick uses 13-bit ADC resolution (0-8191 range) with 12dB attenuation for 0-2.5V input range
+- 5% dead-zone is applied to joystick axes to prevent drift
 
 <img width="1098" height="1186" alt="image" src="https://github.com/user-attachments/assets/9c4156cc-c137-480c-a5b3-8567fc039555" />
 
