@@ -24,6 +24,8 @@ As a USB stack, TinyUSB component is used for optimal performance and compatibil
 
 ## Hardware Setup
 
+[Espressif ESP32-S2 Pin Diagram](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s2/_images/esp32-s2-devkitc-1-v1-pinout.png)
+
 ### Pin Assignment
 
 **Analog Joystick:**
@@ -80,6 +82,7 @@ Button 7 → GPIO14 (active low, internal pull-up)
 - GPIO43, GPIO44 (UART0 TX/RX)
 - GPIO45, GPIO46 (System pins)
 
+Picture below shows the prototype with only two buttons to test. The code supports seven in total.
 ![PXL_20251015_020349234](https://github.com/user-attachments/assets/71d8b990-86b1-4c38-b076-bf7b09293d62)
 
 ## Software Setup
@@ -166,14 +169,9 @@ This ensures consistent testing environments across different machines.
 
 ### Testing
 
-1. **System Information** (Quick check):
-   - Hold Option + Click Apple Menu → System Information
-   - Go to Hardware → USB
-   - Look for "TinyUSB Fishing Game Controller"
-
-2. **Web-based Gamepad Tester**:
+1. **Web-based Gamepad Tester**:
    - Visit https://gamepad-tester.com or https://html5gamepad.com
-   - All 9 buttons should register
+   - All 7 buttons should register
    - Joystick X/Y axes should respond
    - Rotating encoder should change Z-axis
 
@@ -281,16 +279,17 @@ I (264) tusb_desc:
 I (434) TinyUSB: TinyUSB Driver installed
 I (434) usb_init: USB initialized
 I (434) usb_init: Joystick ADC initialized (13-bit, 12dB attenuation)
-I (434) usb_init: Starting main loop - Gamepad with 9 buttons, Joystick + Encoder ready
+I (434) usb_init: Starting main loop - Gamepad with Joystick + Encoder ready
 ```
 
 ## Project Structure
 ```
 esp32-fishing-controller/
 ├── main/
-│   └── tusb_hid_example_main.c    # Main controller code
+│   └── main.c                     # Main controller code
+├── managed_components/            # TinyUSB components
 ├── CMakeLists.txt
-├── sdkconfig                       # ESP-IDF configuration
+├── sdkconfig                      # ESP-IDF configuration
 ├── idf_component.yml              # Component dependencies
 ├── pyproject.toml                 # Python testing dependencies
 └── README.md                      # This file
@@ -299,12 +298,9 @@ esp32-fishing-controller/
 ## Future Enhancements
 
 - [ ] Add haptic feedback (vibration motor)
-- [ ] Implement configurable button remapping
 - [ ] Add LED status indicators
-- [ ] Custom PCB design
 - [ ] 3D-printed enclosure
-- [ ] Battery power option with USB-C charging
-- [ ] Bluetooth support for wireless operation
+- [ ] Battery + Bluetooth support for wireless operation
 
 ## License
 
