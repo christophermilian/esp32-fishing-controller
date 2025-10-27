@@ -92,6 +92,11 @@ void tud_hid_set_report_cb(uint8_t instance, uint8_t report_id, hid_report_type_
 
 #define BUTTON_1_PIN GPIO_NUM_8
 #define BUTTON_2_PIN GPIO_NUM_2
+#define BUTTON_3_PIN GPIO_NUM_10
+#define BUTTON_4_PIN GPIO_NUM_11
+#define BUTTON_5_PIN GPIO_NUM_12
+#define BUTTON_6_PIN GPIO_NUM_13
+#define BUTTON_7_PIN GPIO_NUM_14
 
 #define ENCODER_CLK_PIN GPIO_NUM_3
 #define ENCODER_DT_PIN GPIO_NUM_6
@@ -149,7 +154,7 @@ typedef struct {
  */
 void init_buttons(void) {
     const gpio_config_t button_config = {
-        .pin_bit_mask = (1ULL << BUTTON_1_PIN) | (1ULL << BUTTON_2_PIN),
+        .pin_bit_mask = (1ULL << BUTTON_1_PIN) | (1ULL << BUTTON_2_PIN) | (1ULL << BUTTON_3_PIN) | (1ULL << BUTTON_4_PIN) | (1ULL << BUTTON_5_PIN) | (1ULL << BUTTON_6_PIN) | (1ULL << BUTTON_7_PIN),
         .mode = GPIO_MODE_INPUT,
         .intr_type = GPIO_INTR_DISABLE,
         .pull_up_en = true,
@@ -362,11 +367,16 @@ joystick_state_t read_joystick(void) {
  * @note Button mapping: bit 0=Button1, bit 1=Button2, bit 2=Encoder, bit 3=Joystick
  */
 void send_gamepad_report(void) {
-    // Read digital button states (active low due to pull-up)
+    // Read all 7 button states
     bool button_1_pressed = (gpio_get_level(BUTTON_1_PIN) == 0);
     bool button_2_pressed = (gpio_get_level(BUTTON_2_PIN) == 0);
+    bool button_3_pressed = (gpio_get_level(BUTTON_3_PIN) == 0);
+    bool button_4_pressed = (gpio_get_level(BUTTON_4_PIN) == 0);
+    bool button_5_pressed = (gpio_get_level(BUTTON_5_PIN) == 0);
+    bool button_6_pressed = (gpio_get_level(BUTTON_6_PIN) == 0);
+    bool button_7_pressed = (gpio_get_level(BUTTON_7_PIN) == 0);
 
-    // Read encoder button state with proper debouncing
+    // Read encoder button with debouncing
     bool current_encoder_button_state = (gpio_get_level(ENCODER_SW_PIN) == 0);
     bool encoder_button_pressed = false;
     uint32_t current_time = xTaskGetTickCount() * portTICK_PERIOD_MS;
@@ -382,17 +392,22 @@ void send_gamepad_report(void) {
     // Button is pressed if current debounced state is pressed
     encoder_button_pressed = last_encoder_button_state;
 
-    // Read joystick state (includes analog axes and button)
+    // Read joystick axis state only
     joystick_state_t joystick = read_joystick();
 
-    // Create button mask
+    // Create button mask for all 9 buttons
     uint32_t buttons = 0;
-    if (button_1_pressed) buttons |= (1 << 0);        // Button 1
-    if (button_2_pressed) buttons |= (1 << 1);        // Button 2
-    if (encoder_button_pressed) buttons |= (1 << 2);  // Encoder button
-    if (joystick.sw_pressed) buttons |= (1 << 3);     // Joystick button
+    if (button_1_pressed) buttons |= (1 << 0);
+    if (button_2_pressed) buttons |= (1 << 1);
+    if (button_3_pressed) buttons |= (1 << 2);
+    if (button_4_pressed) buttons |= (1 << 3);
+    if (button_5_pressed) buttons |= (1 << 4);
+    if (button_6_pressed) buttons |= (1 << 5);
+    if (button_7_pressed) buttons |= (1 << 6);
+    if (encoder_button_pressed) buttons |= (1 << 7);
+    if (joystick.sw_pressed) buttons |= (1 << 8);
 
-    // Process encoder for Z-axis with velocity-based response
+    // Process encoder for Z-axis
     int32_t position_delta = encoder_position - last_reported_position;
     uint32_t time_delta = current_time - last_position_time;
 
@@ -415,9 +430,7 @@ void send_gamepad_report(void) {
     if (scaled_position < -127) scaled_position = -127;
     int8_t z_axis = (int8_t)scaled_position;
 
-    // Send HID gamepad report with full axis mapping
-    // Format: report_id, x, y, z, rz, rx, ry, hat, buttons
-    // X/Y from joystick, Z from encoder, rest unused
+    // Send HID gamepad report
     tud_hid_gamepad_report(0, joystick.x_calibrated, joystick.y_calibrated,
                            z_axis, 0, 0, 0, 0, buttons);
 }
