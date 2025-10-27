@@ -18,7 +18,8 @@ A custom USB HID gamepad controller for fishing games, featuring a KY-040 rotary
 - ESP32-S2 development board
 - Analog joystick module (2-axis with push button)
 - KY-040 rotary encoder module
-- 7x Mini Momentary Push Button, SPST Normal Open ON/OFF 2 Pin
+- 7x Mini Momentary Push Button
+- Mini Snap Switch with long Leg, Single Pull Double Throw (SPDT)
 
 As a USB stack, TinyUSB component is used for optimal performance and compatibility.
 
