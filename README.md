@@ -23,6 +23,12 @@ A custom USB HID gamepad controller for fishing games, featuring a KY-040 rotary
 
 As a USB stack, TinyUSB component is used for optimal performance and compatibility.
 
+Pictures below shows the prototype case.
+![IMG_20251109_151200](https://github.com/user-attachments/assets/b514e960-9bab-4ebf-834a-debc178d3173)
+![IMG_20251109_151201](https://github.com/user-attachments/assets/df6f05f7-a2ca-47e3-9506-d1ae2b8e1d7b)
+![IMG_20251109_151209](https://github.com/user-attachments/assets/dab225a1-3511-4f67-b656-a6ad71eb2930)
+![IMG_20251109_151215](https://github.com/user-attachments/assets/faeab5e1-ba7a-42c4-83a6-f0179d449b4e)
+
 ## Hardware Setup
 
 [Espressif ESP32-S2 Pin Diagram](https://docs.espressif.com/projects/esp-dev-kits/en/latest/esp32s2/_images/esp32-s2-devkitc-1-v1-pinout.png)
@@ -82,9 +88,6 @@ Button 7 → GPIO14 (active low, internal pull-up)
 - GPIO19, GPIO20 (USB D-, D+)
 - GPIO43, GPIO44 (UART0 TX/RX)
 - GPIO45, GPIO46 (System pins)
-
-Picture below shows the prototype with only two buttons to test. The code supports seven in total.
-![PXL_20251015_020349234](https://github.com/user-attachments/assets/71d8b990-86b1-4c38-b076-bf7b09293d62)
 
 ## Software Setup
 
