@@ -119,7 +119,6 @@ static volatile bool last_dt_state = false;
 static uint32_t last_button_press_time = 0;
 static bool last_encoder_button_state = true;
 static int32_t last_reported_position = 0;
-static uint32_t last_position_time = 0;
 
 // Joystick state variables
 static adc_oneshot_unit_handle_t adc1_handle = NULL;
@@ -354,17 +353,22 @@ joystick_state_t read_joystick(void) {
 /**
  * @brief Read all inputs and send HID gamepad report to host
  *
- * Polls all button states, reads joystick analog values and encoder position,
+ * Polls all button states, reads joystick analog values and encoder rotation direction,
  * then formats and sends a complete HID gamepad report. Handles debouncing
- * for all buttons and applies dead-zone filtering to joystick.
+ * for tactile buttons and applies dead-zone filtering to joystick.
  *
  * @return None
  *
  * @note Called continuously in main loop when USB is mounted and ready
- * @note Joystick X/Y → Gamepad X/Y axes (-127 to +127 range)
- * @note Encoder position → Gamepad Z-axis (-127 to +127 range)
- * @note All buttons use 50ms debouncing to prevent multiple triggers
- * @note Button mapping: bit 0=Button1, bit 1=Button2, bit 2=Encoder, bit 3=Joystick
+ * @note Joystick X/Y → Gamepad left stick (X/Y axes, -127 to +127 range)
+ * @note Encoder rotation → Mapped to virtual buttons combined with physical inputs
+ * @note Tactile buttons use 50ms debouncing to prevent multiple triggers
+ * @note Button mapping:
+ *       - Bits 0-5: Physical buttons 1-6
+ *       - Bit 6: Snap switch (Button 7) OR encoder counter-clockwise (combined "let out line")
+ *       - Bit 7: Encoder push button
+ *       - Bit 8: Joystick push button
+ *       - Bit 9: Encoder clockwise rotation (virtual button "reel in")
  */
 void send_gamepad_report(void) {
     // Read all 7 button states
@@ -395,7 +399,21 @@ void send_gamepad_report(void) {
     // Read joystick axis state only
     joystick_state_t joystick = read_joystick();
 
-    // Create button mask for all 9 buttons
+    // Process encoder rotation as button presses
+    int32_t position_delta = encoder_position - last_reported_position;
+    last_reported_position = encoder_position;
+
+    // Map rotation direction to buttons
+    bool encoder_cw_pressed = false;   // Clockwise (reel in)
+    bool encoder_ccw_pressed = false;  // Counter-clockwise (let out line)
+
+    if (position_delta > 0) {
+        encoder_cw_pressed = true;   // Clockwise rotation detected
+    } else if (position_delta < 0) {
+        encoder_ccw_pressed = true;  // Counter-clockwise rotation detected
+    }
+
+    // Create button mask for all buttons
     uint32_t buttons = 0;
     if (button_1_pressed) buttons |= (1 << 0);
     if (button_2_pressed) buttons |= (1 << 1);
@@ -403,36 +421,21 @@ void send_gamepad_report(void) {
     if (button_4_pressed) buttons |= (1 << 3);
     if (button_5_pressed) buttons |= (1 << 4);
     if (button_6_pressed) buttons |= (1 << 5);
-    if (button_7_pressed) buttons |= (1 << 6);
+
+    // Button 7: Combine snap switch with encoder counter-clockwise (let out line)
+    if (button_7_pressed || encoder_ccw_pressed) buttons |= (1 << 6);
+
     if (encoder_button_pressed) buttons |= (1 << 7);
     if (joystick.sw_pressed) buttons |= (1 << 8);
 
-    // Process encoder for Z-axis
-    int32_t position_delta = encoder_position - last_reported_position;
-    uint32_t time_delta = current_time - last_position_time;
-
-    // Apply velocity scaling for fast movements (more responsive)
-    int32_t scaled_position = encoder_position;
-    if (time_delta > 0 && abs(position_delta) > 2) {
-        // Fast movement detected - apply scaling factor
-        float velocity = (float)abs(position_delta) / time_delta;
-        if (velocity > 0.5f) { // Threshold for "fast" movement
-            scaled_position = encoder_position + (position_delta > 0 ? 10 : -10);
-        }
-    }
-
-    // Update tracking variables
-    last_reported_position = encoder_position;
-    last_position_time = current_time;
-
-    // Map encoder position to Z-axis (constrain to prevent overflow)
-    if (scaled_position > 127) scaled_position = 127;
-    if (scaled_position < -127) scaled_position = -127;
-    int8_t z_axis = (int8_t)scaled_position;
+    // Button 10: Encoder clockwise rotation only (reel in)
+    if (encoder_cw_pressed) buttons |= (1 << 9);
 
     // Send HID gamepad report
+    // Parameters: (report_id, x, y, z, rz, rx, ry, hat, buttons)
+    // x,y = left stick (joystick), no other axes used
     tud_hid_gamepad_report(0, joystick.x_calibrated, joystick.y_calibrated,
-                           z_axis, 0, 0, 0, 0, buttons);
+                           0, 0, 0, 0, 0, buttons);
 }
 
 /**

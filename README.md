@@ -6,10 +6,10 @@ A custom USB HID gamepad controller for fishing games, featuring a KY-040 rotary
 
 - **USB HID Gamepad**: Appears as a standard gamepad to host systems (Windows, macOS, Linux)
 - **Analog Joystick**: 2-axis analog joystick (X/Y axes) with 13-bit ADC resolution for precise rod control
-- **KY-040 Rotary Encoder**: Provides Z-axis control for realistic fishing reel simulation with velocity-based scaling
-- **7 Digital Buttons**: Seven tactile buttons
-- **High-Speed Rotation Support**: Enhanced quadrature decoding with velocity-based scaling for responsive reel action
-- **Debounced Inputs**: Reliable button press detection with 50ms debouncing on all buttons
+- **KY-040 Rotary Encoder**: Realistic fishing reel simulation mapped to button presses (clockwise/counter-clockwise)
+- **9 Total Buttons**: 6 tactile + snap switch + encoder button + joystick button
+- **High-Speed Rotation Support**: Enhanced quadrature decoding for responsive reel action
+- **Debounced Inputs**: Reliable button press detection with 50ms debouncing on all physical buttons
 - **Dead-zone Filtering**: 5% dead-zone on joystick axes prevents drift when at rest
 - **Low Power Operation**: Optimized for USB bus power with proper power management
 
@@ -172,9 +172,10 @@ This ensures consistent testing environments across different machines.
 
 1. **Web-based Gamepad Tester**:
    - Visit https://gamepad-tester.com or https://html5gamepad.com
-   - All 7 buttons should register
-   - Joystick X/Y axes should respond
-   - Rotating encoder should change Z-axis
+   - All 9 physical buttons should register (6 tactile + snap switch + encoder button + joystick button)
+   - Joystick X/Y axes should respond smoothly
+   - Rotating encoder clockwise should trigger Button 10
+   - Rotating encoder counter-clockwise OR pressing snap switch should trigger Button 7
 
 3. **Steam**:
    - Steam Settings
@@ -184,25 +185,31 @@ This ensures consistent testing environments across different machines.
 
 ### Button Mapping
 
-| Physical Input | HID Button | Bit Position |
-|---------------|------------|--------------|
-| Button 1 (GPIO8) | Button 1 | 0 |
-| Button 2 (GPIO2) | Button 2 | 1 |
-| Button 3 (GPIO10) | Button 3 | 2 |
-| Button 4 (GPIO11) | Button 4 | 3 |
-| Button 5 (GPIO12) | Button 5 | 4 |
-| Button 6 (GPIO13) | Button 6 | 5 |
-| Button 7 (GPIO14) | Button 7 | 6 |
-| Encoder Switch (GPIO7) | Button 8 | 7 |
-| Joystick Switch (GPIO9) | Button 9 | 8 |
+| Physical Input | HID Button | Bit Position | Description |
+|---------------|------------|--------------|-------------|
+| Button 1 (GPIO8) | Button 1 | 0 | Physical tactile button |
+| Button 2 (GPIO2) | Button 2 | 1 | Physical tactile button |
+| Button 3 (GPIO10) | Button 3 | 2 | Physical tactile button |
+| Button 4 (GPIO11) | Button 4 | 3 | Physical tactile button |
+| Button 5 (GPIO12) | Button 5 | 4 | Physical tactile button |
+| Button 6 (GPIO13) | Button 6 | 5 | Physical tactile button |
+| Snap Switch (GPIO14) **OR** Encoder CCW | Button 7 | 6 | Combined "let out line" button |
+| Encoder Switch (GPIO7) | Button 8 | 7 | Encoder push button |
+| Joystick Switch (GPIO9) | Button 9 | 8 | Joystick push button |
+| Encoder Clockwise | Button 10 | 9 | Virtual button (reel in) |
 
 ### Axis Mapping
 
-| Physical Input | HID Axis | Range |
-|---------------|----------|-------|
-| Joystick X | X-axis | -127 to +127 |
-| Joystick Y | Y-axis | -127 to +127 |
-| Encoder Rotation | Z-axis | -127 to +127 |
+| Physical Input | HID Axis | Range | Description |
+|---------------|----------|-------|-------------|
+| Joystick X (GPIO4) | X-axis | -127 to +127 | Left stick horizontal |
+| Joystick Y (GPIO5) | Y-axis | -127 to +127 | Left stick vertical |
+
+**Note**: The rotary encoder is mapped to virtual buttons rather than an axis:
+- **Clockwise rotation** → Button 10 (reel in)
+- **Counter-clockwise rotation** → Button 7 (combined with snap switch for "let out line")
+
+Each rotation "tick" triggers the corresponding button for that polling cycle (10ms at 100Hz). Either pulling the snap switch OR rotating counter-clockwise will trigger Button 7.
 
 ## Troubleshooting
 
@@ -239,8 +246,22 @@ This ensures consistent testing environments across different machines.
 
 1. Check CLK and DT connections
 2. Verify 3.3V power to encoder module
-3. Try swapping CLK and DT if rotation direction is wrong
-4. Check serial monitor for encoder position changes
+3. Try swapping CLK and DT if rotation direction is reversed
+4. Test with gamepad tester:
+   - Button 10 should light up when rotating clockwise
+   - Button 7 should light up when rotating counter-clockwise
+5. Check serial monitor for debug output
+
+### Steam Controller Configuration
+
+For best results in fishing games:
+1. Open Steam Big Picture Mode → Settings → Controller
+2. Find "TinyUSB Fishing Game Controller"
+3. Configure button bindings:
+   - **Button 10** (encoder clockwise) → Map to your game's "reel in" action
+   - **Button 7** (snap switch OR encoder counter-clockwise) → Map to your game's "let out line" action
+   - **Left Stick** (joystick) → Rod movement/camera control
+   - **Buttons 1-6, 8-9** → Game actions (cast, release catch, etc.)
 
 ## Example Output
 
